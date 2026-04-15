@@ -3,6 +3,99 @@
 > **Team TechDrift** | IEEE CIS Hackathon | Track: CyberSec (Sponsored)  
 > Members: Swarai Wath · Tanavi Pandao · Gauravi Chakote · Rushi Gujarathi
 
+
+This project is an end-to-end security analytics pipeline designed to detect, understand, and explain suspicious activities from system and application logs.
+Instead of just flagging anomalies, the system focuses on connecting events, understanding context, and explaining threats in plain language, making it useful for both engineers and security analysts.
+
+What This Project Does
+Modern systems generate massive volumes of logs, but raw logs alone don’t tell a story.
+
+This system:
+•	Processes raw logs into structured data 
+•	Detects unusual patterns using both rules and machine learning 
+•	Correlates events across time to identify attack behavior 
+•	Explains why something is suspicious using AI 
+•	Assigns risk scores to help prioritize responses
+
+ What This Project Does
+Modern systems generate massive volumes of logs, but raw logs alone don’t tell a story.
+This system:
+•	Processes raw logs into structured data 
+•	Detects unusual patterns using both rules and machine learning 
+•	Correlates events across time to identify attack behavior 
+•	Explains why something is suspicious using AI 
+•	Assigns risk scores to help prioritize responses 
+________________________________________
+🏗️ How the System Works
+The pipeline is built as a sequence of focused layers, each responsible for a specific task:
+1. Log Ingestion
+The system collects logs from multiple sources such as:
+•	System logs 
+•	Application logs 
+•	Authentication logs 
+These logs are batched and passed forward for processing.
+________________________________________
+2. Preprocessing
+Raw logs are noisy and inconsistent. This stage:
+•	Parses log entries 
+•	Extracts meaningful features (IP, timestamp, user, action, etc.) 
+•	Converts everything into a structured format 
+________________________________________
+3. Detection Engine
+This is where anomalies are identified using a hybrid approach:
+•	Rule-based detection for known patterns (e.g., repeated login failures) 
+•	Isolation Forest for unknown or unusual behavior 
+The output is a set of flagged events.
+________________________________________
+4. Intelligence Layer
+Instead of treating events independently, this layer connects them:
+•	Correlates related events 
+•	Identifies sequences (e.g., failed → success login) 
+•	Analyzes context like time, frequency, and user behavior 
+This is where actual attack patterns begin to emerge.
+________________________________________
+5. Explainability Layer
+This is the core differentiator of the project.
+Using an LLM (via LangGraph), the system:
+•	Converts technical detections into human-readable explanations 
+•	Explains why something is suspicious 
+•	Summarizes attack scenarios clearly 
+________________________________________
+6. Risk Scoring
+Each detected threat is evaluated and assigned a score based on:
+•	Severity 
+•	Frequency 
+•	Context 
+This helps prioritize what needs immediate attention.
+________________________________________
+7. Output & Visualization
+Finally, results are presented as:
+•	Threat reports 
+•	Alerts/notifications 
+•	Dashboard visualizations 
+
+Key Capabilities
+1. Attack Flow Reconstruction
+The system doesn’t just flag events — it connects them.
+Example:
+Multiple failed logins followed by a successful attempt can indicate a brute-force attack.
+________________________________________
+ 2.Context-Aware Detection
+Decisions are not made in isolation.
+Example:
+A login at an unusual hour from a new IP address is treated differently than a normal login.
+________________________________________
+3. Noise Reduction
+Large volumes of harmless logs are filtered out so only meaningful signals remain.
+________________________________________
+4. Risk-Based Prioritization
+Not all alerts are equal — the system ranks them so critical threats stand out.
+________________________________________
+5. Explainable Insights
+Every flagged threat comes with a clear explanation, not just a label.
+________________________________________
+
+
 ---
 
 ## 📌 What is Log-Sentinel?
@@ -152,21 +245,6 @@ Chains sorted by maximum risk score. Top 5 displayed prominently.
     Description : Attacker at 203.0.113.45 performed repeated failed logins then successfully authenticated.
 ```
 
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| Data Processing | Python, Pandas | Parse & structure raw logs |
-| Detection Engine | Isolation Forest (sklearn) | Unsupervised anomaly detection |
-| Rule Engine | Python (custom) | Domain-specific threat rules |
-| Intelligence Layer | Feature Engineering + Pattern Analysis | Multi-event attack chain correlation |
-| Output | JSON + Text Report | Structured + human-readable results |
-| Frontend | HTML5 + Vanilla JS | Interactive browser dashboard |
-
----
-
 ## 🌐 Future Scope
 
 1. **Real-time streaming** — Kafka/Fluentd integration for live log feeds
@@ -174,18 +252,5 @@ Chains sorted by maximum risk score. Top 5 displayed prominently.
 3. **SIEM integration** — Connect to Splunk, Elastic, or cloud security platforms
 4. **Auto-response** — Automated IP blocking / account lockout triggers
 5. **Behavioral baselines** — Learn per-user normal patterns to improve detection
-
 ---
 
-## 📧 Team Contact
-
-| Name | Role |
-|------|------|
-| Swarai Wath | ML & Detection Engine |
-| Tanavi Pandao | Frontend & Dashboard |
-| Gauravi Chakote | System Architecture |
-| Rushi Gujarathi | Rule Engine & Integration |
-
----
-
-*Log-Sentinel — "From raw logs to actionable intelligence in seconds."*
