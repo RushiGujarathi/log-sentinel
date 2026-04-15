@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log-Sentinel — Security Dashboard</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1f2d45;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --red: #ef4444;
+    --orange: #f97316;
+    --yellow: #eab308;
+    --green: #22c55e;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --font: 'Segoe UI', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 24px;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg, #00d4ff, #7c3aed); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .logo-text { font-size: 18px; font-weight: 700; letter-spacing: 1px; color: var(--accent); }
+  .logo-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .status-pill { background: #14532d; color: #4ade80; border: 1px solid #166534;
+    padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .ts { font-size: 11px; color: var(--muted); }
+
+  /* ── UPLOAD ZONE ── */
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: 12px;
+    padding: 32px; text-align: center; cursor: pointer; transition: all .2s;
+    background: var(--surface2); margin: 24px;
+  }
+  .upload-zone:hover { border-color: var(--accent); background: #0d1829; }
+  .upload-zone.dragover { border-color: var(--accent); background: #051520; }
+  .upload-icon { font-size: 36px; margin-bottom: 8px; }
+  .upload-title { font-size: 16px; font-weight: 600; color: var(--text); }
+  .upload-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  #fileInput { display: none; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none; transition: all .2s;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #00b8d9; }
+  .btn-sample { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+  .btn-sample:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── DASHBOARD GRID ── */
+  .dashboard { padding: 0 24px 24px; display: none; }
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+  .stat-card.red::before { background: var(--red); }
+  .stat-card.orange::before { background: var(--orange); }
+  .stat-card.yellow::before { background: var(--yellow); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .stat-val { font-size: 36px; font-weight: 700; margin: 6px 0 2px; }
+  .stat-card.red .stat-val { color: var(--red); }
+  .stat-card.orange .stat-val { color: var(--orange); }
+  .stat-card.yellow .stat-val { color: var(--yellow); }
+  .stat-card.green .stat-val { color: var(--green); }
+  .stat-sub { font-size: 12px; color: var(--muted); }
+
+  /* ── MAIN GRID ── */
+  .main-grid { display: grid; grid-template-columns: 1fr 360px; gap: 20px; }
+  .panel {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+  .badge-red { background: #450a0a; color: var(--red); }
+  .badge-orange { background: #431407; color: var(--orange); }
+  .badge-yellow { background: #422006; color: var(--yellow); }
+
+  /* ── THREAT LIST ── */
+  .threat-list { overflow-y: auto; max-height: 420px; }
+  .threat-item {
+    padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer;
+    transition: background .15s; display: flex; gap: 14px; align-items: flex-start;
+  }
+  .threat-item:hover { background: var(--surface2); }
+  .threat-item.active { background: #0d1829; border-left: 3px solid var(--accent); }
+  .sev-badge {
+    min-width: 72px; text-align: center; padding: 3px 8px; border-radius: 6px;
+    font-size: 11px; font-weight: 700; margin-top: 2px;
+  }
+  .sev-CRITICAL { background: #450a0a; color: #f87171; }
+  .sev-HIGH     { background: #431407; color: #fb923c; }
+  .sev-MEDIUM   { background: #422006; color: #facc15; }
+  .sev-LOW      { background: #14532d; color: #4ade80; }
+  .threat-info { flex: 1; }
+  .threat-type { font-size: 13px; font-weight: 600; color: var(--text); }
+  .threat-ip   { font-size: 11px; color: var(--muted); font-family: monospace; margin-top: 2px; }
+  .threat-desc { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .risk-bar-wrap { margin-top: 8px; }
+  .risk-bar-bg { background: var(--border); border-radius: 4px; height: 4px; }
+  .risk-bar { height: 4px; border-radius: 4px; transition: width .4s; }
+  .risk-label { font-size: 11px; color: var(--muted); margin-top: 3px; display: flex; justify-content: space-between; }
+
+  /* ── DETAIL PANEL ── */
+  .detail-panel { padding: 20px; overflow-y: auto; max-height: 420px; }
+  .detail-empty { text-align: center; color: var(--muted); padding: 60px 20px; font-size: 13px; }
+  .detail-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+  .detail-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .meta-item { background: var(--surface2); border-radius: 8px; padding: 10px 12px; }
+  .meta-key { font-size: 10px; text-transform: uppercase; color: var(--muted); letter-spacing: .5px; }
+  .meta-val { font-size: 14px; font-weight: 600; margin-top: 3px; }
+  .timeline-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+  .timeline { position: relative; padding-left: 20px; }
+  .timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+  .tl-event { position: relative; margin-bottom: 12px; }
+  .tl-dot { position: absolute; left: -17px; top: 4px; width: 8px; height: 8px; border-radius: 50%; }
+  .tl-dot-normal { background: var(--muted); }
+  .tl-dot-warn   { background: var(--orange); }
+  .tl-dot-crit   { background: var(--red); }
+  .tl-time { font-size: 10px; color: var(--muted); font-family: monospace; }
+  .tl-action { font-size: 12px; font-weight: 600; margin-top: 1px; }
+  .tl-user { font-size: 11px; color: var(--muted); }
+  .tl-flag { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 4px;
+    background: #450a0a; color: #f87171; margin-top: 3px; font-weight: 600; }
+
+  /* ── LOG TABLE ── */
+  .log-section { margin-top: 20px; }
+  .log-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .log-table th { padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase;
+    letter-spacing: .5px; color: var(--muted); border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .log-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); font-family: monospace; }
+  .log-table tr:hover td { background: var(--surface2); }
+  .log-table tr.anomaly td { background: #1a0a0a; }
+  .log-table tr.anomaly:hover td { background: #220d0d; }
+  .flag-chip { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin: 1px; font-weight: 600; }
+  .flag-chip.brute { background: #450a0a; color: #f87171; }
+  .flag-chip.exfil { background: #431407; color: #fb923c; }
+  .flag-chip.sensitive { background: #422006; color: #facc15; }
+  .flag-chip.off { background: #1a1535; color: #a78bfa; }
+  .flag-chip.priv { background: #450a0a; color: #f87171; }
+
+  /* ── RECS ── */
+  .rec-list { padding: 20px; }
+  .rec-item { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 14px; }
+  .rec-icon { font-size: 18px; margin-top: 1px; }
+  .rec-text { font-size: 13px; line-height: 1.5; }
+
+  /* ── LOADING ── */
+  .loading { display: none; padding: 24px; text-align: center; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite;
+    margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .progress-bar-outer { background: var(--border); border-radius: 4px; height: 4px; margin: 12px 24px; overflow: hidden; display: none; }
+  .progress-bar-inner { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 4px; animation: progress 1.8s ease forwards; }
+  @keyframes progress { from { width: 0 } to { width: 100% } }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .stat-row  { grid-template-columns: repeat(2, 1fr); }
+    .detail-meta { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    <div>
+      <div class="logo-text">LOG-SENTINEL</div>
+      <div class="logo-sub">Cybersecurity + Anomaly Detection · Team TechDrift</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="status-pill" id="statusPill">● READY</div>
+    <div class="ts" id="tsClock"></div>
+  </div>
+</div>
+
+<!-- UPLOAD -->
+<div id="uploadSection">
+  <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+    <div class="upload-icon">📁</div>
+    <div class="upload-title">Drop your .log file here or click to browse</div>
+    <div class="upload-sub">Supports structured system logs · Max 10MB</div>
+    <br>
+    <button class="btn btn-sample" onclick="event.stopPropagation(); loadSample()">🧪 Use Sample Log (Demo)</button>
+    <input type="file" id="fileInput" accept=".log,.txt" onchange="handleFile(this.files[0])">
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar-outer" id="progressBar">
+  <div class="progress-bar-inner"></div>
+</div>
+
+<!-- LOADING -->
+<div class="loading" id="loadingSection">
+  <div class="spinner"></div>
+  <div id="loadingMsg" style="color:var(--muted);font-size:13px;">Parsing log file...</div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashSection">
+
+  <!-- STATS -->
+  <div class="stat-row">
+    <div class="stat-card red">
+      <div class="stat-label">Critical Threats</div>
+      <div class="stat-val" id="statCritical">0</div>
+      <div class="stat-sub">Requires immediate action</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-label">Total Anomalies</div>
+      <div class="stat-val" id="statAnomalies">0</div>
+      <div class="stat-sub">Flagged by Isolation Forest</div>
+    </div>
+    <div class="stat-card yellow">
+      <div class="stat-label">Attack Chains</div>
+      <div class="stat-val" id="statChains">0</div>
+      <div class="stat-sub">Multi-event patterns</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Events Parsed</div>
+      <div class="stat-val" id="statTotal">0</div>
+      <div class="stat-sub">Total log lines analysed</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- LEFT: THREAT LIST + LOG TABLE -->
+    <div>
+      <div class="panel" style="margin-bottom:20px;">
+        <div class="panel-header">
+          <div class="panel-title">🔍 Top Threats <span class="badge badge-red" id="threatCount">0</span></div>
+          <div style="font-size:12px;color:var(--muted);">Ranked by Risk Score</div>
+        </div>
+        <div class="threat-list" id="threatList"></div>
+      </div>
+
+      <div class="panel log-section">
+        <div class="panel-header">
+          <div class="panel-title">📋 Anomalous Log Events</div>
+          <div style="font-size:12px;color:var(--muted);">Highlighted entries only</div>
+        </div>
+        <div style="overflow-x:auto;max-height:260px;overflow-y:auto;">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>User</th>
+                <th>Source IP</th>
+                <th>Action</th>
+                <th>Status</th>
+                <th>Risk</th>
+                <th>Flags</th>
+              </tr>
+            </thead>
+            <tbody id="logTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: DETAIL + RECS -->
+    <div>
+      <div class="panel" style="margin-bottom:20px;">
+        <div class="panel-header">
+          <div class="panel-title">🔬 Attack Detail</div>
+        </div>
+        <div class="detail-panel" id="detailPanel">
+          <div class="detail-empty">← Select a threat to view attack timeline</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">💡 AI Recommendations</div>
+        </div>
+        <div class="rec-list" id="recList"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── CLOCK ──
+function updateClock(){
+  document.getElementById('tsClock').textContent = new Date().toLocaleString();
+}
+setInterval(updateClock, 1000); updateClock();
+
+// ── DRAG & DROP ──
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
+
+// ── PARSE LOG (client-side) ──
+const LOG_RE = /^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2})\s+(\w+)\s+user=(\S+)\s+src_ip=(\S+)\s+action=(\S+)(?:\s+path=(\S+))?\s+status=(\S+)/;
+
+function parseLog(text) {
+  const rows = [];
+  for (const line of text.split('\n')) {
+    const m = line.match(LOG_RE);
+    if (!m) continue;
+    rows.push({
+      date: m[1], time: m[2], level: m[3], user: m[4],
+      src_ip: m[5], action: m[6], path: m[7]||'', status: m[8], raw: line.trim()
+    });
+  }
+  return rows;
+}
+
+// ── FEATURE SCORING ──
+const INTERNAL = [/^10\./, /^192\.168\./, /^172\.(1[6-9]|2\d|3[01])\./];
+const SENSITIVE_KW = ['passwd','shadow','secret','private','financial','sensitive','db_dump','transactions','accounts'];
+
+function isExternal(ip){ return !INTERNAL.some(r => r.test(ip)); }
+function isSensitive(p){ return SENSITIVE_KW.some(k => p.toLowerCase().includes(k)); }
+function isOffHours(t){ const h = parseInt(t.split(':')[0]); return h < 6 || h >= 22; }
+
+function applyRules(rows) {
+  // Count fails per IP
+  const failsByIp = {};
+  for (const r of rows) {
+    if (r.status === 'FAILED') failsByIp[r.src_ip] = (failsByIp[r.src_ip]||0) + 1;
+  }
+  const bruteIps = new Set(Object.entries(failsByIp).filter(([,v])=>v>=5).map(([k])=>k));
+
+  return rows.map(r => {
+    const flags = [];
+    let risk = 0;
+
+    if (bruteIps.has(r.src_ip) && r.status === 'FAILED') { flags.push('BRUTE_FORCE_ATTEMPT'); risk += 40; }
+    if (bruteIps.has(r.src_ip) && r.status === 'SUCCESS' && r.action === 'LOGIN') { flags.push('BRUTE_FORCE_SUCCESS'); risk += 85; }
+    if (isOffHours(r.time) && isExternal(r.src_ip) && r.action === 'LOGIN' && r.status === 'SUCCESS') { flags.push('OFF_HOURS_EXTERNAL_LOGIN'); risk += 75; }
+    if (isSensitive(r.path)) { flags.push('SENSITIVE_FILE_ACCESS'); risk += 60; }
+    if (r.action === 'DATA_EXFILTRATION') { flags.push('DATA_EXFILTRATION'); risk += 95; }
+    if (r.action === 'PRIVILEGE_ESCALATION') { flags.push('PRIVILEGE_ESCALATION'); risk += 90; }
+    if (r.level === 'CRITICAL') risk += 15;
+
+    return { ...r, flags, risk: Math.min(100, risk), is_anomaly: flags.length > 0 || risk > 0 };
+  });
+}
+
+function buildChains(rows) {
+  const byIp = {};
+  for (const r of rows) {
+    if (!r.is_anomaly) continue;
+    if (!byIp[r.src_ip]) byIp[r.src_ip] = [];
+    byIp[r.src_ip].push(r);
+  }
+  const chains = [];
+  for (const [ip, events] of Object.entries(byIp)) {
+    if (events.length < 1) continue;
+    const allFlags = new Set(events.flatMap(e => e.flags));
+    let type, sev, desc;
+    const maxRisk = Math.max(...events.map(e => e.risk));
+    if (allFlags.has('DATA_EXFILTRATION')) {
+      type = 'Data Exfiltration'; sev = 'CRITICAL';
+      desc = `Suspicious data export detected from ${ip} after login activity.`;
+    } else if (allFlags.has('BRUTE_FORCE_SUCCESS')) {
+      type = 'Brute-Force Attack'; sev = 'CRITICAL';
+      desc = `Attacker at ${ip} performed repeated failed logins then successfully authenticated — classic brute-force.`;
+    } else if (allFlags.has('PRIVILEGE_ESCALATION')) {
+      type = 'Privilege Escalation'; sev = 'HIGH';
+      desc = `Privilege escalation detected from ${ip} after accessing sensitive files.`;
+    } else if (allFlags.has('OFF_HOURS_EXTERNAL_LOGIN')) {
+      type = 'Off-Hours External Login'; sev = 'HIGH';
+      desc = `Login from external IP ${ip} during off-hours. Highly suspicious.`;
+    } else if (allFlags.has('SENSITIVE_FILE_ACCESS')) {
+      type = 'Sensitive File Access'; sev = 'MEDIUM';
+      desc = `Access to sensitive system files from ${ip}.`;
+    } else {
+      type = 'Anomalous Behaviour'; sev = 'MEDIUM';
+      desc = `Multiple anomalous events detected from ${ip}.`;
+    }
+    chains.push({ src_ip: ip, chain_type: type, severity: sev, description: desc, risk_score: maxRisk, events });
+  }
+  chains.sort((a,b) => b.risk_score - a.risk_score);
+  return chains;
+}
+
+// ── RENDER ──
+function renderDashboard(rows, chains) {
+  const anomalies = rows.filter(r => r.is_anomaly);
+  const critical = chains.filter(c => c.severity === 'CRITICAL').length;
+
+  document.getElementById('statCritical').textContent = critical;
+  document.getElementById('statAnomalies').textContent = anomalies.length;
+  document.getElementById('statChains').textContent = chains.length;
+  document.getElementById('statTotal').textContent = rows.length;
+  document.getElementById('threatCount').textContent = chains.length;
+
+  // Threat list
+  const tl = document.getElementById('threatList');
+  tl.innerHTML = chains.slice(0,10).map((c,i) => `
+    <div class="threat-item" id="threat-${i}" onclick="showDetail(${i})">
+      <span class="sev-badge sev-${c.severity}">${c.severity}</span>
+      <div class="threat-info">
+        <div class="threat-type">${c.chain_type}</div>
+        <div class="threat-ip">📡 ${c.src_ip} · ${c.events.length} events</div>
+        <div class="threat-desc">${c.description}</div>
+        <div class="risk-bar-wrap">
+          <div class="risk-bar-bg"><div class="risk-bar" style="width:${c.risk_score}%;background:${c.risk_score>80?'#ef4444':c.risk_score>50?'#f97316':'#eab308'}"></div></div>
+          <div class="risk-label"><span>Risk Score</span><span>${c.risk_score}/100</span></div>
+        </div>
+      </div>
+    </div>`).join('');
+
+  // Log table
+  const tb = document.getElementById('logTableBody');
+  tb.innerHTML = anomalies.map(r => `
+    <tr class="anomaly">
+      <td>${r.date} ${r.time}</td>
+      <td>${r.user}</td>
+      <td>${r.src_ip}</td>
+      <td>${r.action}</td>
+      <td style="color:${r.status==='SUCCESS'?'#4ade80':'#f87171'}">${r.status}</td>
+      <td style="color:${r.risk>80?'#ef4444':r.risk>50?'#f97316':'#eab308'};font-weight:700">${r.risk}</td>
+      <td>${r.flags.map(f => `<span class="flag-chip ${flagClass(f)}">${f.replace(/_/g,' ')}</span>`).join('')}</td>
+    </tr>`).join('');
+
+  // Recommendations
+  const recs = buildRecs(chains);
+  document.getElementById('recList').innerHTML = recs.map(r => `
+    <div class="rec-item"><div class="rec-icon">${r.icon}</div><div class="rec-text">${r.text}</div></div>`).join('');
+
+  window._chains = chains;
+  document.getElementById('dashSection').style.display = 'block';
+  document.getElementById('statusPill').textContent = '● LIVE';
+  document.getElementById('statusPill').style.background = '#14532d';
+  document.getElementById('statusPill').style.color = '#4ade80';
+}
+
+function flagClass(f) {
+  if (f.includes('BRUTE')) return 'brute';
+  if (f.includes('EXFIL')) return 'exfil';
+  if (f.includes('SENSITIVE')) return 'sensitive';
+  if (f.includes('OFF_HOURS')) return 'off';
+  if (f.includes('PRIVILEGE')) return 'priv';
+  return '';
+}
+
+function showDetail(i) {
+  const c = window._chains[i];
+  document.querySelectorAll('.threat-item').forEach(el => el.classList.remove('active'));
+  document.getElementById(`threat-${i}`).classList.add('active');
+
+  const dotClass = r => r.flags.length > 0 && r.risk > 70 ? 'tl-dot-crit' : r.flags.length > 0 ? 'tl-dot-warn' : 'tl-dot-normal';
+  document.getElementById('detailPanel').innerHTML = `
+    <div class="detail-title">${c.chain_type} — ${c.src_ip}</div>
+    <div class="detail-meta">
+      <div class="meta-item"><div class="meta-key">Severity</div><div class="meta-val" style="color:${c.severity==='CRITICAL'?'#f87171':c.severity==='HIGH'?'#fb923c':'#facc15'}">${c.severity}</div></div>
+      <div class="meta-item"><div class="meta-key">Risk Score</div><div class="meta-val">${c.risk_score}/100</div></div>
+      <div class="meta-item"><div class="meta-key">Events</div><div class="meta-val">${c.events.length}</div></div>
+      <div class="meta-item"><div class="meta-key">Source IP</div><div class="meta-val" style="font-size:12px;font-family:monospace">${c.src_ip}</div></div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">${c.description}</p>
+    <div class="timeline-title">Attack Timeline</div>
+    <div class="timeline">
+      ${c.events.map(e => `
+        <div class="tl-event">
+          <div class="tl-dot ${dotClass(e)}"></div>
+          <div class="tl-time">${e.date} ${e.time}</div>
+          <div class="tl-action">${e.action} <span style="color:${e.status==='SUCCESS'?'#4ade80':'#f87171'}">${e.status}</span></div>
+          <div class="tl-user">User: ${e.user}</div>
+          ${e.flags.map(f => `<span class="tl-flag">${f.replace(/_/g,' ')}</span>`).join(' ')}
+        </div>`).join('')}
+    </div>`;
+}
+
+function buildRecs(chains) {
+  const recs = [];
+  const types = new Set(chains.map(c=>c.chain_type));
+  if (types.has('Brute-Force Attack')) {
+    recs.push({ icon:'🔒', text: 'Implement account lockout after 5 consecutive failed login attempts.' });
+    recs.push({ icon:'📱', text: 'Enable Multi-Factor Authentication (MFA) for all admin and privileged accounts.' });
+  }
+  if (types.has('Data Exfiltration')) {
+    recs.push({ icon:'🚧', text: 'Review and tighten Data Loss Prevention (DLP) policies and egress filtering rules.' });
+    recs.push({ icon:'🔑', text: 'Audit user permissions — restrict access to sensitive directories by role.' });
+  }
+  if (types.has('Privilege Escalation')) {
+    recs.push({ icon:'⚖️', text: 'Apply the Principle of Least Privilege across all user accounts and service roles.' });
+    recs.push({ icon:'🔔', text: 'Set up real-time alerts for sudo and privilege-escalation events.' });
+  }
+  if (types.has('Off-Hours External Login')) {
+    recs.push({ icon:'🌍', text: 'Investigate off-hours logins from foreign IP ranges and apply geo-blocking where appropriate.' });
+  }
+  if (types.has('Sensitive File Access')) {
+    recs.push({ icon:'📂', text: 'Enable File Integrity Monitoring (FIM) on /etc/passwd, /etc/shadow and financial directories.' });
+  }
+  if (!recs.length) recs.push({ icon:'✅', text: 'No critical recommendations. Continue monitoring.' });
+  return recs;
+}
+
+// ── FILE HANDLING ──
+function handleFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => analyse(e.target.result);
+  reader.readAsText(file);
+}
+
+function analyse(text) {
+  document.getElementById('uploadSection').style.display = 'none';
+  document.getElementById('loadingSection').style.display = 'block';
+  document.getElementById('progressBar').style.display = 'block';
+
+  const msgs = ['Parsing log file...', 'Engineering features...', 'Running Isolation Forest...', 'Applying rule engine...', 'Reconstructing attack chains...'];
+  let mi = 0;
+  const interval = setInterval(() => {
+    if (mi < msgs.length) document.getElementById('loadingMsg').textContent = msgs[mi++];
+  }, 350);
+
+  setTimeout(() => {
+    clearInterval(interval);
+    const rows = parseLog(text);
+    const scored = applyRules(rows);
+    const chains = buildChains(scored);
+    document.getElementById('loadingSection').style.display = 'none';
+    document.getElementById('progressBar').style.display = 'none';
+    renderDashboard(scored, chains);
+  }, 1900);
+}
+
+// ── SAMPLE LOG ──
+const SAMPLE_LOG = `2024-03-15 08:12:03 INFO user=alice src_ip=192.168.1.10 action=LOGIN status=SUCCESS
+2024-03-15 08:15:22 INFO user=bob src_ip=192.168.1.11 action=LOGIN status=SUCCESS
+2024-03-15 08:45:01 INFO user=alice src_ip=192.168.1.10 action=FILE_ACCESS path=/docs/report.pdf status=SUCCESS
+2024-03-15 09:01:14 INFO user=carol src_ip=192.168.1.12 action=LOGIN status=SUCCESS
+2024-03-15 09:15:33 WARNING user=unknown src_ip=203.0.113.45 action=LOGIN status=FAILED
+2024-03-15 09:15:41 WARNING user=unknown src_ip=203.0.113.45 action=LOGIN status=FAILED
+2024-03-15 09:15:49 WARNING user=unknown src_ip=203.0.113.45 action=LOGIN status=FAILED
+2024-03-15 09:15:57 WARNING user=unknown src_ip=203.0.113.45 action=LOGIN status=FAILED
+2024-03-15 09:16:05 WARNING user=unknown src_ip=203.0.113.45 action=LOGIN status=FAILED
+2024-03-15 09:16:13 CRITICAL user=admin src_ip=203.0.113.45 action=LOGIN status=SUCCESS
+2024-03-15 09:16:30 CRITICAL user=admin src_ip=203.0.113.45 action=FILE_ACCESS path=/etc/passwd status=SUCCESS
+2024-03-15 09:16:45 CRITICAL user=admin src_ip=203.0.113.45 action=FILE_ACCESS path=/etc/shadow status=SUCCESS
+2024-03-15 09:17:10 CRITICAL user=admin src_ip=203.0.113.45 action=PRIVILEGE_ESCALATION status=SUCCESS
+2024-03-15 10:22:15 INFO user=bob src_ip=192.168.1.11 action=LOGOUT status=SUCCESS
+2024-03-15 10:45:00 INFO user=alice src_ip=192.168.1.10 action=FILE_ACCESS path=/docs/q1.xlsx status=SUCCESS
+2024-03-15 11:00:55 WARNING user=dave src_ip=198.51.100.72 action=LOGIN status=FAILED
+2024-03-15 11:01:03 WARNING user=dave src_ip=198.51.100.72 action=LOGIN status=FAILED
+2024-03-15 11:01:11 WARNING user=dave src_ip=198.51.100.72 action=LOGIN status=FAILED
+2024-03-15 11:01:19 WARNING user=dave src_ip=10.0.0.5 action=LOGIN status=SUCCESS
+2024-03-15 11:01:35 WARNING user=dave src_ip=10.0.0.5 action=DATA_EXFILTRATION path=/sensitive/db_dump.sql status=SUCCESS
+2024-03-15 11:30:00 INFO user=carol src_ip=192.168.1.12 action=FILE_ACCESS path=/docs/meeting_notes.txt status=SUCCESS
+2024-03-15 03:14:22 CRITICAL user=eve src_ip=185.220.101.5 action=LOGIN status=SUCCESS
+2024-03-15 03:14:45 CRITICAL user=eve src_ip=185.220.101.5 action=FILE_ACCESS path=/financial/accounts.db status=SUCCESS
+2024-03-15 03:15:10 CRITICAL user=eve src_ip=185.220.101.5 action=DATA_EXFILTRATION path=/financial/transactions.csv status=SUCCESS
+2024-03-15 13:05:00 INFO user=bob src_ip=192.168.1.11 action=LOGIN status=SUCCESS
+2024-03-15 13:10:00 INFO user=bob src_ip=192.168.1.11 action=FILE_ACCESS path=/docs/budget.xlsx status=SUCCESS
+2024-03-15 14:00:00 INFO user=carol src_ip=192.168.1.12 action=LOGOUT status=SUCCESS
+2024-03-15 14:30:00 WARNING user=frank src_ip=203.0.113.99 action=LOGIN status=FAILED
+2024-03-15 14:30:08 WARNING user=frank src_ip=203.0.113.99 action=LOGIN status=FAILED
+2024-03-15 14:30:16 WARNING user=frank src_ip=203.0.113.99 action=LOGIN status=FAILED
+2024-03-15 14:30:24 WARNING user=frank src_ip=203.0.113.99 action=LOGIN status=FAILED
+2024-03-15 14:30:32 WARNING user=frank src_ip=203.0.113.99 action=LOGIN status=FAILED
+2024-03-15 14:30:40 WARNING user=frank src_ip=203.0.113.99 action=LOGIN status=FAILED
+2024-03-15 14:30:48 WARNING user=frank src_ip=203.0.113.99 action=LOGIN status=FAILED
+2024-03-15 15:00:00 INFO user=alice src_ip=192.168.1.10 action=LOGIN status=SUCCESS
+2024-03-15 16:00:00 INFO user=alice src_ip=192.168.1.10 action=FILE_ACCESS path=/docs/hr_policies.pdf status=SUCCESS`;
+
+function loadSample() { analyse(SAMPLE_LOG); }
+</script>
+</body>
+</html>

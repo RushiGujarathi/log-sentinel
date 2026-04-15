@@ -1,0 +1,430 @@
+{
+  "summary": {
+    "total_events": 37,
+    "anomalies": 21,
+    "attack_chains": 4,
+    "analysis_timestamp": "2026-04-15T13:06:47.354383"
+  },
+  "top_threats": [
+    {
+      "src_ip": "10.0.0.5",
+      "chain_type": "Data Exfiltration",
+      "severity": "CRITICAL",
+      "description": "Suspicious data export detected from 10.0.0.5 after login activity.",
+      "risk_score": 100.0,
+      "event_count": 2,
+      "events": [
+        {
+          "time": "2024-03-15 11:01:19",
+          "user": "dave",
+          "action": "LOGIN",
+          "status": "SUCCESS",
+          "flags": []
+        },
+        {
+          "time": "2024-03-15 11:01:35",
+          "user": "dave",
+          "action": "DATA_EXFILTRATION",
+          "status": "SUCCESS",
+          "flags": [
+            "SENSITIVE_FILE_ACCESS",
+            "DATA_EXFILTRATION"
+          ]
+        }
+      ]
+    },
+    {
+      "src_ip": "185.220.101.5",
+      "chain_type": "Data Exfiltration",
+      "severity": "CRITICAL",
+      "description": "Suspicious data export detected from 185.220.101.5 after login activity.",
+      "risk_score": 100.0,
+      "event_count": 3,
+      "events": [
+        {
+          "time": "2024-03-15 03:14:22",
+          "user": "eve",
+          "action": "LOGIN",
+          "status": "SUCCESS",
+          "flags": [
+            "OFF_HOURS_EXTERNAL_LOGIN"
+          ]
+        },
+        {
+          "time": "2024-03-15 03:14:45",
+          "user": "eve",
+          "action": "FILE_ACCESS",
+          "status": "SUCCESS",
+          "flags": [
+            "SENSITIVE_FILE_ACCESS"
+          ]
+        },
+        {
+          "time": "2024-03-15 03:15:10",
+          "user": "eve",
+          "action": "DATA_EXFILTRATION",
+          "status": "SUCCESS",
+          "flags": [
+            "SENSITIVE_FILE_ACCESS",
+            "DATA_EXFILTRATION"
+          ]
+        }
+      ]
+    },
+    {
+      "src_ip": "203.0.113.45",
+      "chain_type": "Brute-Force Attack",
+      "severity": "CRITICAL",
+      "description": "Attacker at 203.0.113.45 performed repeated failed logins followed by a successful authentication \u2014 classic brute-force pattern.",
+      "risk_score": 90.6,
+      "event_count": 9,
+      "events": [
+        {
+          "time": "2024-03-15 09:15:33",
+          "user": "unknown",
+          "action": "LOGIN",
+          "status": "FAILED",
+          "flags": [
+            "BRUTE_FORCE_ATTEMPT"
+          ]
+        },
+        {
+          "time": "2024-03-15 09:15:41",
+          "user": "unknown",
+          "action": "LOGIN",
+          "status": "FAILED",
+          "flags": [
+            "BRUTE_FORCE_ATTEMPT"
+          ]
+        },
+        {
+          "time": "2024-03-15 09:15:49",
+          "user": "unknown",
+          "action": "LOGIN",
+          "status": "FAILED",
+          "flags": [
+            "BRUTE_FORCE_ATTEMPT"
+          ]
+        },
+        {
+          "time": "2024-03-15 09:15:57",
+          "user": "unknown",
+          "action": "LOGIN",
+          "status": "FAILED",
+          "flags": [
+            "BRUTE_FORCE_ATTEMPT"
+          ]
+        },
+        {
+          "time": "2024-03-15 09:16:05",
+          "user": "unknown",
+          "action": "LOGIN",
+          "status": "FAILED",
+          "flags": [
+            "BRUTE_FORCE_ATTEMPT"
+          ]
+        },
+        {
+          "time": "2024-03-15 09:16:13",
+          "user": "admin",
+          "action": "LOGIN",
+          "status": "SUCCESS",
+          "flags": [
+            "BRUTE_FORCE_SUCCESS"
+          ]
+        },
+        {
+          "time": "2024-03-15 09:16:30",
+          "user": "admin",
+          "action": "FILE_ACCESS",
+          "status": "SUCCESS",
+          "flags": [
+            "SENSITIVE_FILE_ACCESS"
+          ]
+        },
+        {
+          "time": "2024-03-15 09:16:45",
+          "user": "admin",
+          "action": "FILE_ACCESS",
+          "status": "SUCCESS",
+          "flags": [
+            "SENSITIVE_FILE_ACCESS"
+          ]
+        },
+        {
+          "time": "2024-03-15 09:17:10",
+          "user": "admin",
+          "action": "PRIVILEGE_ESCALATION",
+          "status": "SUCCESS",
+          "flags": [
+            "PRIVILEGE_ESCALATION"
+          ]
+        }
+      ]
+    },
+    {
+      "src_ip": "203.0.113.99",
+      "chain_type": "Anomalous Behaviour",
+      "severity": "MEDIUM",
+      "description": "Multiple anomalous events detected from 203.0.113.99.",
+      "risk_score": 25.6,
+      "event_count": 7,
+      "events": [
+        {
+          "time": "2024-03-15 14:30:00",
+          "user": "frank",
+          "action": "LOGIN",
+          "status": "FAILED",
+          "flags": [
+            "BRUTE_FORCE_ATTEMPT"
+          ]
+        },
+        {
+          "time": "2024-03-15 14:30:08",
+          "user": "frank",
+          "action": "LOGIN",
+          "status": "FAILED",
+          "flags": [
+            "BRUTE_FORCE_ATTEMPT"
+          ]
+        },
+        {
+          "time": "2024-03-15 14:30:16",
+          "user": "frank",
+          "action": "LOGIN",
+          "status": "FAILED",
+          "flags": [
+            "BRUTE_FORCE_ATTEMPT"
+          ]
+        },
+        {
+          "time": "2024-03-15 14:30:24",
+          "user": "frank",
+          "action": "LOGIN",
+          "status": "FAILED",
+          "flags": [
+            "BRUTE_FORCE_ATTEMPT"
+          ]
+        },
+        {
+          "time": "2024-03-15 14:30:32",
+          "user": "frank",
+          "action": "LOGIN",
+          "status": "FAILED",
+          "flags": [
+            "BRUTE_FORCE_ATTEMPT"
+          ]
+        },
+        {
+          "time": "2024-03-15 14:30:40",
+          "user": "frank",
+          "action": "LOGIN",
+          "status": "FAILED",
+          "flags": [
+            "BRUTE_FORCE_ATTEMPT"
+          ]
+        },
+        {
+          "time": "2024-03-15 14:30:48",
+          "user": "frank",
+          "action": "LOGIN",
+          "status": "FAILED",
+          "flags": [
+            "BRUTE_FORCE_ATTEMPT"
+          ]
+        }
+      ]
+    }
+  ],
+  "all_anomalies": [
+    {
+      "timestamp": "2024-03-15 03:14:22",
+      "user": "eve",
+      "src_ip": "185.220.101.5",
+      "action": "LOGIN",
+      "status": "SUCCESS",
+      "risk_score": 100.0,
+      "rule_flags": "OFF_HOURS_EXTERNAL_LOGIN;"
+    },
+    {
+      "timestamp": "2024-03-15 03:14:45",
+      "user": "eve",
+      "src_ip": "185.220.101.5",
+      "action": "FILE_ACCESS",
+      "status": "SUCCESS",
+      "risk_score": 88.0,
+      "rule_flags": "SENSITIVE_FILE_ACCESS;"
+    },
+    {
+      "timestamp": "2024-03-15 03:15:10",
+      "user": "eve",
+      "src_ip": "185.220.101.5",
+      "action": "DATA_EXFILTRATION",
+      "status": "SUCCESS",
+      "risk_score": 100.0,
+      "rule_flags": "SENSITIVE_FILE_ACCESS;DATA_EXFILTRATION;"
+    },
+    {
+      "timestamp": "2024-03-15 09:15:33",
+      "user": "unknown",
+      "src_ip": "203.0.113.45",
+      "action": "LOGIN",
+      "status": "FAILED",
+      "risk_score": 30.2,
+      "rule_flags": "BRUTE_FORCE_ATTEMPT;"
+    },
+    {
+      "timestamp": "2024-03-15 09:15:41",
+      "user": "unknown",
+      "src_ip": "203.0.113.45",
+      "action": "LOGIN",
+      "status": "FAILED",
+      "risk_score": 30.2,
+      "rule_flags": "BRUTE_FORCE_ATTEMPT;"
+    },
+    {
+      "timestamp": "2024-03-15 09:15:49",
+      "user": "unknown",
+      "src_ip": "203.0.113.45",
+      "action": "LOGIN",
+      "status": "FAILED",
+      "risk_score": 30.2,
+      "rule_flags": "BRUTE_FORCE_ATTEMPT;"
+    },
+    {
+      "timestamp": "2024-03-15 09:15:57",
+      "user": "unknown",
+      "src_ip": "203.0.113.45",
+      "action": "LOGIN",
+      "status": "FAILED",
+      "risk_score": 30.2,
+      "rule_flags": "BRUTE_FORCE_ATTEMPT;"
+    },
+    {
+      "timestamp": "2024-03-15 09:16:05",
+      "user": "unknown",
+      "src_ip": "203.0.113.45",
+      "action": "LOGIN",
+      "status": "FAILED",
+      "risk_score": 30.2,
+      "rule_flags": "BRUTE_FORCE_ATTEMPT;"
+    },
+    {
+      "timestamp": "2024-03-15 09:16:13",
+      "user": "admin",
+      "src_ip": "203.0.113.45",
+      "action": "LOGIN",
+      "status": "SUCCESS",
+      "risk_score": 57.3,
+      "rule_flags": "BRUTE_FORCE_SUCCESS;"
+    },
+    {
+      "timestamp": "2024-03-15 09:16:30",
+      "user": "admin",
+      "src_ip": "203.0.113.45",
+      "action": "FILE_ACCESS",
+      "status": "SUCCESS",
+      "risk_score": 60.4,
+      "rule_flags": "SENSITIVE_FILE_ACCESS;"
+    },
+    {
+      "timestamp": "2024-03-15 09:16:45",
+      "user": "admin",
+      "src_ip": "203.0.113.45",
+      "action": "FILE_ACCESS",
+      "status": "SUCCESS",
+      "risk_score": 60.4,
+      "rule_flags": "SENSITIVE_FILE_ACCESS;"
+    },
+    {
+      "timestamp": "2024-03-15 09:17:10",
+      "user": "admin",
+      "src_ip": "203.0.113.45",
+      "action": "PRIVILEGE_ESCALATION",
+      "status": "SUCCESS",
+      "risk_score": 90.6,
+      "rule_flags": "PRIVILEGE_ESCALATION;"
+    },
+    {
+      "timestamp": "2024-03-15 11:01:19",
+      "user": "dave",
+      "src_ip": "10.0.0.5",
+      "action": "LOGIN",
+      "status": "SUCCESS",
+      "risk_score": 69.3,
+      "rule_flags": ""
+    },
+    {
+      "timestamp": "2024-03-15 11:01:35",
+      "user": "dave",
+      "src_ip": "10.0.0.5",
+      "action": "DATA_EXFILTRATION",
+      "status": "SUCCESS",
+      "risk_score": 100.0,
+      "rule_flags": "SENSITIVE_FILE_ACCESS;DATA_EXFILTRATION;"
+    },
+    {
+      "timestamp": "2024-03-15 14:30:00",
+      "user": "frank",
+      "src_ip": "203.0.113.99",
+      "action": "LOGIN",
+      "status": "FAILED",
+      "risk_score": 25.6,
+      "rule_flags": "BRUTE_FORCE_ATTEMPT;"
+    },
+    {
+      "timestamp": "2024-03-15 14:30:08",
+      "user": "frank",
+      "src_ip": "203.0.113.99",
+      "action": "LOGIN",
+      "status": "FAILED",
+      "risk_score": 25.6,
+      "rule_flags": "BRUTE_FORCE_ATTEMPT;"
+    },
+    {
+      "timestamp": "2024-03-15 14:30:16",
+      "user": "frank",
+      "src_ip": "203.0.113.99",
+      "action": "LOGIN",
+      "status": "FAILED",
+      "risk_score": 25.6,
+      "rule_flags": "BRUTE_FORCE_ATTEMPT;"
+    },
+    {
+      "timestamp": "2024-03-15 14:30:24",
+      "user": "frank",
+      "src_ip": "203.0.113.99",
+      "action": "LOGIN",
+      "status": "FAILED",
+      "risk_score": 25.6,
+      "rule_flags": "BRUTE_FORCE_ATTEMPT;"
+    },
+    {
+      "timestamp": "2024-03-15 14:30:32",
+      "user": "frank",
+      "src_ip": "203.0.113.99",
+      "action": "LOGIN",
+      "status": "FAILED",
+      "risk_score": 25.6,
+      "rule_flags": "BRUTE_FORCE_ATTEMPT;"
+    },
+    {
+      "timestamp": "2024-03-15 14:30:40",
+      "user": "frank",
+      "src_ip": "203.0.113.99",
+      "action": "LOGIN",
+      "status": "FAILED",
+      "risk_score": 25.6,
+      "rule_flags": "BRUTE_FORCE_ATTEMPT;"
+    },
+    {
+      "timestamp": "2024-03-15 14:30:48",
+      "user": "frank",
+      "src_ip": "203.0.113.99",
+      "action": "LOGIN",
+      "status": "FAILED",
+      "risk_score": 25.6,
+      "rule_flags": "BRUTE_FORCE_ATTEMPT;"
+    }
+  ]
+}

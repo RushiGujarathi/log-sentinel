@@ -1,0 +1,74 @@
+============================================================
+   LOG-SENTINEL — SECURITY BRIEFING
+   Analysis Date: 2026-04-15 13:06:47
+============================================================
+
+📊 SUMMARY
+   Total log events : 37
+   Anomalies flagged: 21 (56.8%)
+   Attack chains    : 4
+
+────────────────────────────────────────────────────────────
+🔍 TOP 5 THREATS (ranked by risk score)
+────────────────────────────────────────────────────────────
+
+#1  🔴 [CRITICAL]  Data Exfiltration
+    Source IP   : 10.0.0.5
+    Risk Score  : 100.0/100
+    Events      : 2
+    Description : Suspicious data export detected from 10.0.0.5 after login activity.
+    Attack Timeline:
+      2024-03-15 11:01:19  dave        LOGIN                     SUCCESS
+      2024-03-15 11:01:35  dave        DATA_EXFILTRATION         SUCCESS  ← SENSITIVE_FILE_ACCESS, DATA_EXFILTRATION
+
+#2  🔴 [CRITICAL]  Data Exfiltration
+    Source IP   : 185.220.101.5
+    Risk Score  : 100.0/100
+    Events      : 3
+    Description : Suspicious data export detected from 185.220.101.5 after login activity.
+    Attack Timeline:
+      2024-03-15 03:14:22  eve         LOGIN                     SUCCESS  ← OFF_HOURS_EXTERNAL_LOGIN
+      2024-03-15 03:14:45  eve         FILE_ACCESS               SUCCESS  ← SENSITIVE_FILE_ACCESS
+      2024-03-15 03:15:10  eve         DATA_EXFILTRATION         SUCCESS  ← SENSITIVE_FILE_ACCESS, DATA_EXFILTRATION
+
+#3  🔴 [CRITICAL]  Brute-Force Attack
+    Source IP   : 203.0.113.45
+    Risk Score  : 90.6/100
+    Events      : 9
+    Description : Attacker at 203.0.113.45 performed repeated failed logins followed by a successful authentication — classic brute-force pattern.
+    Attack Timeline:
+      2024-03-15 09:15:33  unknown     LOGIN                     FAILED  ← BRUTE_FORCE_ATTEMPT
+      2024-03-15 09:15:41  unknown     LOGIN                     FAILED  ← BRUTE_FORCE_ATTEMPT
+      2024-03-15 09:15:49  unknown     LOGIN                     FAILED  ← BRUTE_FORCE_ATTEMPT
+      2024-03-15 09:15:57  unknown     LOGIN                     FAILED  ← BRUTE_FORCE_ATTEMPT
+      2024-03-15 09:16:05  unknown     LOGIN                     FAILED  ← BRUTE_FORCE_ATTEMPT
+      2024-03-15 09:16:13  admin       LOGIN                     SUCCESS  ← BRUTE_FORCE_SUCCESS
+      2024-03-15 09:16:30  admin       FILE_ACCESS               SUCCESS  ← SENSITIVE_FILE_ACCESS
+      2024-03-15 09:16:45  admin       FILE_ACCESS               SUCCESS  ← SENSITIVE_FILE_ACCESS
+      2024-03-15 09:17:10  admin       PRIVILEGE_ESCALATION      SUCCESS  ← PRIVILEGE_ESCALATION
+
+#4  🟡 [MEDIUM]  Anomalous Behaviour
+    Source IP   : 203.0.113.99
+    Risk Score  : 25.6/100
+    Events      : 7
+    Description : Multiple anomalous events detected from 203.0.113.99.
+    Attack Timeline:
+      2024-03-15 14:30:00  frank       LOGIN                     FAILED  ← BRUTE_FORCE_ATTEMPT
+      2024-03-15 14:30:08  frank       LOGIN                     FAILED  ← BRUTE_FORCE_ATTEMPT
+      2024-03-15 14:30:16  frank       LOGIN                     FAILED  ← BRUTE_FORCE_ATTEMPT
+      2024-03-15 14:30:24  frank       LOGIN                     FAILED  ← BRUTE_FORCE_ATTEMPT
+      2024-03-15 14:30:32  frank       LOGIN                     FAILED  ← BRUTE_FORCE_ATTEMPT
+      2024-03-15 14:30:40  frank       LOGIN                     FAILED  ← BRUTE_FORCE_ATTEMPT
+      2024-03-15 14:30:48  frank       LOGIN                     FAILED  ← BRUTE_FORCE_ATTEMPT
+
+────────────────────────────────────────────────────────────
+💡 AI RECOMMENDATIONS
+────────────────────────────────────────────────────────────
+  • Review DLP policies and egress filtering.
+  • Audit user permissions for sensitive directories.
+  • Implement account lockout after 5 failed attempts.
+  • Enable MFA for all admin accounts.
+
+============================================================
+   End of Log-Sentinel Report
+============================================================
